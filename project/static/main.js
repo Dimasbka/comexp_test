@@ -2,6 +2,7 @@
 
 (function() {
   console.log('Sanity Check!');
+  document.getElementById('error').style.display = 'none';
 })();
 
 
@@ -78,19 +79,33 @@ function getStatus(taskID) {
         <td>${res.task_status}</td>
         <td>${res.task_result}</td>
       </tr>`;
-    const row = document.getElementById(taskID)
+    var row = document.getElementById(taskID)
     console.log('row', row);
     if (row){
       row.innerHTML = html;
     }else{
-      const newRow = document.getElementById('tasks').insertRow(0);
-      newRow.id = taskID;
-      newRow.innerHTML = html;
+      row = document.getElementById('tasks').insertRow(0);
+      row.id = taskID;
+      row.innerHTML = html;
     }
 
     const taskStatus = res.task_status;
-    if (taskStatus === 'SUCCESS' || taskStatus === 'FAILURE') return false;
-    setTimeout(function() {
+    if (taskStatus === 'FAILURE'){
+      console.log('FAILURE',row);
+      row.classList.add("alert-danger")
+      return false;
+    } 
+    if (taskStatus === 'SUCCESS'){ 
+      console.log('SUCCESS',row);
+      if ( res.task_result !== "None"){
+        row.classList.add("alert-success")
+      }else{
+        row.classList.add("alert-danger")
+      }
+      
+      return false;
+    }
+      setTimeout(function() {
       getStatus(res.task_id);
     }, 1000);
   })

@@ -1,7 +1,6 @@
 # ignore env
 /venv
 
-
 # ignore all cache
 __pycache__/
 .pyc
@@ -14,6 +13,7 @@ db.sqlite3
 .pydevproject
 .coverage
 examples/
+.vscode/
 /.pytest_cache
 
 # operational files

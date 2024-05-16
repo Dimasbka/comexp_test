@@ -1,2 +1,2 @@
 # comexp_test
-test repositiry
+test repository

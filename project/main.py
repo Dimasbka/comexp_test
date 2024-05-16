@@ -22,16 +22,6 @@ def home(request: Request):
     return templates.TemplateResponse("home.html", context={"request": request})
 
 
-# @celery.task(name="download_file_url")
-# @celery.task(name="download_YouTube_url")
-# @celery.task(name="download_stream_url")
-
-
-@app.post("/tasks", status_code=201)
-def run_task(payload=Body(...)):
-    task_type = payload["type"]
-
-
 @app.post("/download/YouTube", status_code=201)
 async def download_YouTube(payload=Body(...)):
     url = payload.get("url", "").strip()
@@ -79,6 +69,4 @@ def get_status(task_id) -> JSONResponse:
         "task_status": str(task_result.status),
         "task_result": str(task_result.result),
     }
-    # print(task_result.traceback)
-    # print(f"{result=}")
     return JSONResponse(result)

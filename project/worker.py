@@ -10,6 +10,8 @@ import m3u8
 import os
 import time
 
+import subprocess
+
 # import httpx
 
 
@@ -44,16 +46,13 @@ def download_stream_url(
 
     Note: Actual recording duration and duration of the fragments will be summarized from the duration of the stream fragments, but not less than one fragment.
 
-
     TODO: for tests the addresses are taken from environment,
-            for page     http://www.freeintertv.com/view/id-1099
+            page         http://www.freeintertv.com/view/id-1099
             M3U8_URL =   https://live-wuxi.cgtn.com/live/wx_cgtn_1000k_internalnormal.m3u8
     on production you need to specify the actual address of the playlist
     or add a parser that will look for a link on the page
 
     TODO: think about how to convert to async while preserving the order of fragments
-
-
     """
 
     if playlist_url == "":
@@ -62,13 +61,9 @@ def download_stream_url(
     playlist_url_base = urljoin(playlist_url, ".")
 
     print(
-        f"Recording video... {recording_duration=}/{max_fragment_duration=} from {playlist_url}"
+        f"Recording video... {recording_duration}/{max_fragment_duration} from {playlist_url}"
     )
 
-    return [
-        "test_video",
-    ]
-    # float type, because m3u8 library returns data in this format
     total_duration: float = 0.0
     fragment_duration: float = 0.0
     fragment_count: int = 0
@@ -116,10 +111,7 @@ def download_stream_url(
 
                     fragment_filename_list.append(fragment_filename)
 
-                print(
-                    f"\r Recording fragment {fragment_count} segment {segment_count}...",
-                    end="",
-                )
+                print(f"Recording fragment {fragment_count} segment {segment_count}...")
                 with open(fragment_filename, "ab") as f:
                     for chunk in r1.iter_content(chunk_size=1024):
                         num += 1
@@ -132,13 +124,19 @@ def download_stream_url(
                 loaded_segments.add(ts_url)
                 fragment_duration += duration
                 total_duration += duration
-        time_to_sleep = 0.5 * duration * len(playlist)
-        print(f"sleep {time_to_sleep}s")
-        time.sleep(time_to_sleep)
 
-        # I'm clearing the list, since I only need to compare it to the last attempt.
+                if total_duration >= recording_duration:
+                    break
+
+        # clearing the list, since I only need to compare it to the last attempt.
         loaded_segments_old = loaded_segments
         loaded_segments = set()
+
+        # if there is no required duration, wait for new fragments to appear in the stream
+        if total_duration < recording_duration:
+            time_to_sleep = 0.5 * duration * len(playlist)
+            print(f"sleep {time_to_sleep}s")
+            time.sleep(time_to_sleep)
 
     print(f"    done: fragment_filename_list {fragment_filename_list}")
 
@@ -149,6 +147,7 @@ def download_stream_url(
 @celery.task(name="download_file_url")
 def download_file_url(url: str) -> List[str] | None:
     print(f"Downloading file {url}")
+
     basename = os.path.basename(urlparse(url).path)
     local_filename = os.path.join(DOWNLOADS_DIR, basename)
 
@@ -161,34 +160,31 @@ def download_file_url(url: str) -> List[str] | None:
     return local_filename
 
 
-# TODO: add file existence check
+# TODO: add file existence check and slugify filename
 @celery.task(name="download_YouTube_url")
 def download_YouTube_url(url: str) -> List[str] | None:
     print(f"download YouTube url {url}")
-    try:
-        yt = YouTube(url)
-        stream = yt.streams.get_highest_resolution()
-        stream.download(filename_prefix=DOWNLOADS_DIR)
-        local_filename = stream.get_file_path()
-        print(
-            f"    done: local_filename {local_filename} size {stream.filesize_mb:.1f}Mb"
-        )
-        return local_filename
 
-    except PytubeError as error:
-        print(f"    error: {error}")
-        return None
+    yt = YouTube(url)
+    stream = yt.streams.get_highest_resolution()
+    stream.download(filename_prefix=DOWNLOADS_DIR)
+    local_filename = stream.get_file_path()
+    print(f"    done: local_filename {local_filename} size {stream.filesize_mb:.1f}Mb")
+    return local_filename
 
 
 @celery.task(name="create_task_list")
 def create_task_list(filename_list: List[str]):
-    if filename_list:
-        job = group([create_task.s(filename) for filename in filename_list])
-        result = job.apply_async()
-        result.ready()  # have all subtasks completed?
-        return result.get()
+    if not filename_list:
+        return False
 
-    return False
+    print(f"create_task_list {filename_list}")
+
+    # TODO: add an external utility call here e.g.
+    # for filename in filename_list:
+    #     subprocess.call(['ffmpeg', '-i', filename' ...], shell=True)
+
+    return True
 
 
 @celery.task(name="create_task")
@@ -197,5 +193,9 @@ def create_task(filename: str | None):
     if filename is None:
         return False
 
-    print(f"create_task{filename}")
+    print(f"create_task {filename}")
+
+    # TODO: add an external utility call here e.g.
+    #     subprocess.call(['ffmpeg', '-i', filename' ...], shell=True)
+
     return True

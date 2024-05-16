@@ -8,26 +8,6 @@
 
       <div id='error' class='alert alert-danger alert-dismissible fade show'>Error!</div>
 
-      <section class="YouTube">
-        <h4>YouTube</h4>
-        <form method="post" action='/download/YouTube' onsubmit="return handleSubmit(this)">
-          <div class="form-group">
-            <input type="text" class="form-control" id="YouTube-url" name="url" placeholder="YouTube-url">
-          </div>
-          <button type="submit" class="btn btn-primary">Скачать видео с ютуба</button>
-        </form>
-      </section>
-
-      <section class="file">
-        <h4>file url</h4>
-        <form method="post" action='/download/file' onsubmit="return handleSubmit(this)">
-          <div class="form-group">
-            <input type="text" class="form-control" id="file-url" name="url" placeholder="file url">
-          </div>
-          <button type="submit" class="btn btn-primary">Скачать файл по ссылке</button>
-        </form>
-      </section>
-
       <section>
         <h4>Stream <a href='http://www.freeintertv.com/view/id-1099'>CGTN</a></h4>
         <form method="post" action='/download/stream' onsubmit="return handleSubmit(this)">
@@ -48,11 +28,31 @@
           </div>
           <button type="submit" class="btn btn-primary">Начать запись стрима</button>
         </form>
-      </section>        
+      </section> 
+
+      <section class="YouTube">
+        <h4>YouTube</h4>
+        <form method="post" action='/download/YouTube' onsubmit="return handleSubmit(this)">
+          <div class="form-group">
+            <input type="text" class="form-control" id="YouTube-url" name="url" placeholder="YouTube-url">
+          </div>
+          <button type="submit" class="btn btn-primary">Скачать видео с ютуба</button>
+        </form>
+      </section>
+
+      <section class="file">
+        <h4>file url</h4>
+        <form method="post" action='/download/file' onsubmit="return handleSubmit(this)">
+          <div class="form-group">
+            <input type="text" class="form-control" id="file-url" name="url" placeholder="file url">
+          </div>
+          <button type="submit" class="btn btn-primary">Скачать файл по ссылке</button>
+        </form>
+      </section>
 
     </div>
     <div class='column'>
-      <h3>Task Status</h3>
+      <h3>Состояние задач</h3>
       <br>
       <table class="table">
         <thead>
