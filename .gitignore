@@ -18,5 +18,5 @@ examples/
 
 # operational files
 /project/usr
-/projectlogs/*.log
+*.log
 /project/downloads/*.ts
