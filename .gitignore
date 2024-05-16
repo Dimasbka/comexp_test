@@ -1,0 +1,22 @@
+# ignore env
+/venv
+
+
+# ignore all cache
+__pycache__/
+.pyc
+
+# ignore dev files
+db.sqlite3
+*.bat
+.settings
+.project
+.pydevproject
+.coverage
+examples/
+/.pytest_cache
+
+# operational files
+/project/usr
+/projectlogs/*.log
+/project/downloads/*.ts
